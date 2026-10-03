@@ -1,6 +1,6 @@
 from PySide6 import QtWidgets
 
-# Unified apps window size a position
+# Unified app window size and position
 
 def set_win_size(window: QtWidgets.QWidget):
     # Obtain screen resolution
@@ -9,7 +9,7 @@ def set_win_size(window: QtWidgets.QWidget):
     screen_width = screen_geometry.width()
     screen_height = screen_geometry.height()
 
-    # Set window size to half of screen
+    # Set window size to two thirds of the screen
     window_width = int(screen_width / 3 * 2)
     window_height = int(screen_height / 3 * 2)
 

@@ -1,4 +1,4 @@
-"""Localization, originally the XLSlock was written for Czech users but it was necessary to make EN version too. You can switch languages in 'current_lang'"""
+"""Localization. XLSlock was originally written for Czech users, but an English version was needed too. Switch languages via 'current_lang'."""
 
 current_lang = "en" # "cs" or "en"
 

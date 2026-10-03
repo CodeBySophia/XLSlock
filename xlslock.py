@@ -11,15 +11,17 @@ import sys
 class xlslock(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
-        self.locked_file = None # Intialize as None
+        self.locked_file = None # Initialize as None
         self.unlocked_file = None
         self.initUI()
         self.setAcceptDrops(True) # Enable drag n drop for files
 
     def initUI(self):
         layout = QtWidgets.QVBoxLayout()
+        config.style_main_layout(layout)
         win_size_pos.set_win_size(self)
         self.setWindowTitle(lang.t(config.XLSLOCK_NAME_TEMPLATE))  # Window name
+        self.setWindowIcon(QtGui.QIcon(config.ICON_PATH))
         self.setLayout(layout)  # Set layout for widget
         config.apply_fusion_style()
         self.show()  # Display the window
@@ -41,7 +43,7 @@ class xlslock(QtWidgets.QWidget):
         self.select_locked_file_btn.clicked.connect(self.select_locked_files)
         layout.addWidget(self.select_locked_file_btn)
         # Set font and color of the button
-        self.select_locked_file_btn.setStyleSheet(config.FN_BUTTON_STYLE)
+        config.style_button(self.select_locked_file_btn)
 
         # Label to display selected file path
         self.file_info_label = QtWidgets.QLabel(lang.t("no_file_to_unlock_label"))
@@ -51,16 +53,18 @@ class xlslock(QtWidgets.QWidget):
         self.unlock_btn = QtWidgets.QPushButton(lang.t("unlock_file_btn"), self)
         self.unlock_btn.clicked.connect(lambda: xlslock_fn.unlock_files(self.locked_file))
         # Set font and color of the button
-        self.unlock_btn.setStyleSheet(config.FN_BUTTON_STYLE)
+        config.style_button(self.unlock_btn)
         
         # Layout; Add both buttons in a horizontal layout for better placement
         layout.addWidget(instruction_label)
         layout.addWidget(logo_label)
         layout.addWidget(self.file_info_label)
         button_layout = QtWidgets.QHBoxLayout()
+        button_layout.setSpacing(8)
         button_layout.addWidget(self.select_locked_file_btn)
         button_layout.addWidget(self.unlock_btn)
         layout.addLayout(button_layout)
+        layout.addWidget(config.build_copyright_footer(self))
 
     def dragEnterEvent(self, event: QtGui.QDragEnterEvent): # Obtaining files name, checking file type
         if event.mimeData().hasUrls:
@@ -112,7 +116,13 @@ class xlslock(QtWidgets.QWidget):
             QtWidgets.QMessageBox.warning(self, lang.t("error_title"), lang.t("invalid_format"))
 
 if __name__ == '__main__':
+    try:
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("CodeBySophia.XLSlock")
+    except Exception:
+        pass
     app = QtWidgets.QApplication(sys.argv)
+    app.setWindowIcon(QtGui.QIcon(config.ICON_PATH))
     ex = xlslock()
+    ex.setWindowIcon(QtGui.QIcon(config.ICON_PATH))
     ex.show()
     sys.exit(app.exec())

@@ -4,7 +4,7 @@ import zipfile
 import shutil
 import lang
 
-def unlock_files(locked_file): # Converts Excel file to .zip a removes sheetProtection
+def unlock_files(locked_file): # Converts Excel file to .zip and removes sheetProtection
     if locked_file:
         print(lang.t("processing_file", file=locked_file))
             
@@ -93,6 +93,8 @@ def process_zip_file(zip_file): # Convert to .zip file, remove sheetProtection a
     
     # Find and remove sheetProtection tags
     find_and_remove_sheetProtection(target_folder)
+    # Remove workbook-level protection (structure/read-only hints)
+    remove_workbook_protection(target_folder)
     
     # Recompress to .zip
     compress_to_zip(target_folder, zip_file)
@@ -105,3 +107,37 @@ def process_zip_file(zip_file): # Convert to .zip file, remove sheetProtection a
     original_file = zip_file.replace('.zip', '')
     os.rename(zip_file, original_file)
     print(f"File renamed back to {original_file}")
+
+def remove_workbook_protection(source_folder):
+    """Remove workbook-level protection hints that may force read-only mode."""
+    workbook_xml = os.path.join(source_folder, 'xl', 'workbook.xml')
+    if not os.path.exists(workbook_xml):
+        return
+
+    print(f"Processing workbook XML file: {workbook_xml}")
+    try:
+        with open(workbook_xml, 'r', encoding='utf-8') as file:
+            contents = file.read()
+
+        # Remove workbookProtection tags.
+        while '<workbookProtection' in contents:
+            start = contents.find('<workbookProtection')
+            end = contents.find('/>', start) + 2
+            if start < 0 or end < 2:
+                break
+            contents = contents[:start] + contents[end:]
+
+        # Remove fileSharing tags (readOnlyRecommended/write reservation).
+        while '<fileSharing' in contents:
+            start = contents.find('<fileSharing')
+            end = contents.find('/>', start) + 2
+            if start < 0 or end < 2:
+                break
+            contents = contents[:start] + contents[end:]
+
+        with open(workbook_xml, 'w', encoding='utf-8') as file:
+            file.write(contents)
+
+        print(f"Workbook protection removed from {workbook_xml}")
+    except Exception as e:
+        print(f"Workbook protection cleanup failed for {workbook_xml}: {e}")
